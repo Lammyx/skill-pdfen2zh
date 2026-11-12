@@ -1,0 +1,14 @@
+{
+  "PDF_TRANSLATE_BASE_URL": "https://api.example.com/v1",
+  "PDF_TRANSLATE_MODEL": "your-model-id",
+  "PDF_TRANSLATE_API_KEY": "",
+  "PDF_TRANSLATE_CACHE_DIR": "",
+  "PDF_TRANSLATE_REQUEST_TIMEOUT_SECONDS": "90",
+  "PDF_TRANSLATE_MAX_OUTPUT_TOKENS": "8192",
+  "PDF_TRANSLATE_MAX_RETRIES": "2",
+  "PDF_TRANSLATE_THINKING": "auto",
+  "HTTP_PROXY": "",
+  "HTTPS_PROXY": "",
+  "NO_PROXY": "localhost,127.0.0.1,::1",
+  "SSL_CERT_FILE": ""
+}

@@ -1,0 +1,108 @@
+{
+  "date": "2026-11-12",
+  "engine": "babeldoc==0.6.4",
+  "copiedModules": [
+    {
+      "source": "PDFtranslate/services/reader_service/translation/babeldoc.py",
+      "sourceSha256": "6c98c8a5842a9c0e2c57c318f3c90d49d01e63b7a535269e63d5199052f42c0a",
+      "target": "scripts/pdf_backend/translation/babeldoc.py",
+      "targetSha256": "0c5fe72b777d4129d2142025acb9bfb2dc3807f5ed36d36f76207f5d2f621f4f"
+    },
+    {
+      "source": "PDFtranslate/services/reader_service/translation/worker.py",
+      "sourceSha256": "c7bec28fa09080f4e1c47422381afa8a9599c74a4f92fae1173097a1b265685d",
+      "target": "scripts/pdf_backend/translation/worker.py",
+      "targetSha256": "6a9767722a3d6846b335831bb7523f1023ced50ba8db0fc2fc518cdd154cb488"
+    },
+    {
+      "source": "PDFtranslate/services/reader_service/translation/quality.py",
+      "sourceSha256": "2c1e96e3aaf8a3370a490dd62b8200c699f04f03fbb2e577d03a5822c5c4fb3d",
+      "target": "scripts/pdf_backend/translation/quality.py",
+      "targetSha256": "f34a61211af16de0343bff3152d60ff4d650976958624a0edf31f66f6b430f28"
+    },
+    {
+      "source": "PDFtranslate/services/reader_service/translation/rotated_text.py",
+      "sourceSha256": "8e7c5a86c724b752178e39892efe9d278049c935feb77bdde924f06185b4ed30",
+      "target": "scripts/pdf_backend/translation/rotated_text.py",
+      "targetSha256": "dfad3ec3ac59130ac9bd2a5581c2fc9ab416b72a0513a10b972ef04575cc4b1d"
+    },
+    {
+      "source": "PDFtranslate/services/reader_service/translation/sections.py",
+      "sourceSha256": "9027a2f7acfda080fee2a90b890f443828aa470788f4cc719c2cf3f209c8b102",
+      "target": "scripts/pdf_backend/translation/sections.py",
+      "targetSha256": "00dcd197a8470228a9928abb6d1a3960c706a35d4d0e098ffeae54ca2bed06ef"
+    },
+    {
+      "source": "PDFtranslate/services/reader_service/translation/title_fragments.py",
+      "sourceSha256": "d4eb4c0b1b934a35481c08b0ae064aaf131cb03c9dd75d3c6de5e64779ff815b",
+      "target": "scripts/pdf_backend/translation/title_fragments.py",
+      "targetSha256": "a92425e48076ca3a5b41259dd041fcc5c51d05ede563fdf8a3e2984dda0ed2d1"
+    },
+    {
+      "source": "PDFtranslate/services/reader_service/translation/protocol.py",
+      "sourceSha256": "4c885e584eb653f76942b038691619d0b4ad20171ab4a4a2d44ae6b024e5e266",
+      "target": "scripts/pdf_backend/translation/protocol.py",
+      "targetSha256": "e456dc2ee3e00d76d27b2ca80d8cb442de1e87e0eb307e2bd6e03c50bf3e4e14"
+    },
+    {
+      "source": "PDFtranslate/services/reader_service/translation/openai_adapter.py",
+      "sourceSha256": "15d555091e2b30df0f15bc677dbb64a8c8c1b4b2fc12f49719e0bb1799d9c0f3",
+      "target": "scripts/pdf_backend/translation/openai_adapter.py",
+      "targetSha256": "0055ae16b9b6aa253da0d75d52210347d3111a720cd1903615a73e4b38f32f62"
+    },
+    {
+      "source": "PDFtranslate/services/reader_service/translation/cache.py",
+      "sourceSha256": "c430364a0e4390881bee2864bea0248b920e3e5f321512e81d2bc797cd536e51",
+      "target": "scripts/pdf_backend/translation/cache.py",
+      "targetSha256": "b438423acaa8d4645fb71add171138533fffc34b051a75fd7a27c3dad60556e6"
+    },
+    {
+      "source": "PDFtranslate/services/reader_service/translation/repair.py",
+      "sourceSha256": "b303ae9b51265e8a70f864dd755e2b421a4db94ce50ab8e4e0e59054d3e980a0",
+      "target": "scripts/pdf_backend/translation/repair.py",
+      "targetSha256": "6b88b2cdb485024b7db9a536674231f3e00f5a9be01e70089424b5fae7db71ec"
+    },
+    {
+      "source": "PDFtranslate/services/reader_service/translation/repair_cache.py",
+      "sourceSha256": "563c6a079028ab084c3fbf6de12940c156f684fb91ba827db556029d771f40d9",
+      "target": "scripts/pdf_backend/translation/repair_cache.py",
+      "targetSha256": "aeb8616c12d1f973fbccbd18595bd797ad7d3958febdc407acb2b86d75e92709"
+    },
+    {
+      "source": "PDFtranslate/services/reader_service/translation/repair_results.py",
+      "sourceSha256": "212d3c20ab0f40560baaa2b0061460a49f80ed709e8ac5eb1a68cdb83b2525ed",
+      "target": "scripts/pdf_backend/translation/repair_results.py",
+      "targetSha256": "9c97512469eb8719833dc9001303eeed6fa5174bd529f847efcf506b614da375"
+    },
+    {
+      "source": "PDFtranslate/services/reader_service/translation/layout_repair.py",
+      "sourceSha256": "9eed7b330e3e5db15bc054162373479fe9726f73244d16d848d95924770f8b05",
+      "target": "scripts/pdf_backend/translation/layout_repair.py",
+      "targetSha256": "9eed7b330e3e5db15bc054162373479fe9726f73244d16d848d95924770f8b05"
+    },
+    {
+      "source": "PDFtranslate/services/reader_service/translation/errors.py",
+      "sourceSha256": "49171794b179ff4b54fed5b27a9eda474241c1c807ffa8c06bf8367d4f6ba2e9",
+      "target": "scripts/pdf_backend/translation/errors.py",
+      "targetSha256": "53c33d297f26745762b9b812a5fcd7ba7102e6a94f9ce188c7f4b577059a238a"
+    },
+    {
+      "source": "PDFtranslate/services/reader_service/ai/generation.py",
+      "sourceSha256": "8140126f5d5b435d33c7685fc14c5024169499b1c6c42a5ce19b610f0e4db9cc",
+      "target": "scripts/pdf_backend/ai/generation.py",
+      "targetSha256": "1b5d0100c905b974586e034b551a103e9c046f4c9f04192895da940ab375e83a"
+    },
+    {
+      "source": "PDFtranslate/services/reader_service/ai/usage.py",
+      "sourceSha256": "3642acf5b1328bd7b748aae97b52526b0b1b25affc9e52714cc88524f679bd84",
+      "target": "scripts/pdf_backend/ai/usage.py",
+      "targetSha256": "22a769b1d9836b12a7e0eae1e0c8a277297752ba5feb49a6e2f0b2412f53fc16"
+    }
+  ],
+  "adaptations": [
+    "provider configuration only; no reader database imports",
+    "pure academic prompt constants",
+    "independent worker module and environment variable names",
+    "independent file pipeline and manifests"
+  ]
+}
