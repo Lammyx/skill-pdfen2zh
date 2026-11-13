@@ -30,7 +30,7 @@ skill-pdfen2zh/
     └── references/             使用说明、实现与来源记录
 ```
 
-作为 Skill 使用时，导入完整的 `pdfen2zh/` 目录，入口说明见 [SKILL.md](pdfen2zh/SKILL.md)。也可直接使用以下命令行流程。
+作为 Skill 使用时，选择仓库中的 `pdfen2zh/` 子目录，完整保留其中的脚本、依赖锁与说明文件，入口见 [SKILL.md](pdfen2zh/SKILL.md)。安装到助手工具后仍需完成下面的首次环境准备；也可直接使用命令行。
 
 ## 快速开始
 
@@ -47,6 +47,8 @@ python launch.py doctor
 ```
 
 请确保 `uv` 已加入 PATH。macOS/Linux 中可将 `python` 替换为 `python3`，Windows 也可使用 `py -3`。
+
+首次准备需要联网下载依赖、布局模型和字体，资源下载后可缓存复用；仅模型/字体等资源约 336 MiB，Python 环境另占空间。Windows 若遇到原生库 `DLL load failed`，处理步骤见[环境说明](pdfen2zh/references/usage.md#环境)。
 
 `init` 安装锁定依赖；`--warmup` 继续下载布局模型、字体、CMap 和 tokenizer。这些资源不随源码分发。`doctor` 只检查本地环境和资源，不调用翻译模型，也不验证供应商密钥或模型能力。
 

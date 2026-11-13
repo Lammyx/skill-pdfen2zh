@@ -5,7 +5,13 @@ description: Translate English academic PDFs into Chinese and bilingual PDFs wit
 
 # pdfen2zh：英文 PDF 翻译为中文
 
-使用本技能自带 Python 后端，底层固定 BabelDOC 0.6.4。无需启动阅读器、连接 Zotero 或建立索引。
+使用本技能自带 Python 后端，底层固定 BabelDOC 0.6.4。
+
+## 首次准备（两种模式共用）
+
+先阅读 [usage.md](references/usage.md) 的环境说明。需要 Python 3.11–3.13 和 PATH 中的 uv；缺少 uv 时执行 `python -m pip install uv`。安装完整技能目录后，先运行 `python launch.py init --warmup`，再运行 `python launch.py doctor`。首次准备需要联网下载锁定依赖、布局模型和字体；不能把安装 Skill 目录当作运行环境已经就绪。
+
+入口按自身位置定位技能，可从其他目录通过 `launch.py` 绝对路径调用。助手模式不需要供应商配置；只有 API 模式需要端点、模型和所需密钥。
 
 ## 选择翻译方式
 
@@ -17,7 +23,7 @@ description: Translate English academic PDFs into Chinese and bilingual PDFs wit
 ## API 模式
 
 1. 确认用户指定的输入 PDF 和输出位置。没有指定位置时使用输入目录下的 `translated/`，任务会自动创建独立子目录。
-2. 阅读 [usage.md](references/usage.md) 获取环境安装、参数、缓存与修复命令。统一使用 `python launch.py`；首次执行 `init` 安装锁定依赖，再 `warmup` 准备资源，最后 `doctor` 检查。入口按自身位置定位技能，可从任意目录调用。不得借用其他项目的密钥或依赖路径作为固定运行条件。
+2. 使用已准备好的独立环境；参数、缓存与修复命令见 [usage.md](references/usage.md)。不得借用其他项目的密钥或依赖路径作为固定运行条件。
 3. 输入为扫描件或复杂表格时按材料选择 `--document-mode ocr` 或 `table`；这些模式仍依赖原引擎能力，不能保证所有图中文字可译。
 4. 用户要求翻译具体 PDF 后执行 `translate`。接口从环境变量或本地 `config.local.json` 读取，格式见 `config.example.json`；现有环境变量优先。密钥优先放会话环境，不写入公开技能文件、命令参数或任务清单。
 5. 根据最终 `manifest.json` 和 `report.json` 检查执行状态、页数、片段保留原因与用量，再交付中文和双语 PDF。对用户报告待检查页，不把 `checks_passed` 当成翻译语义验收。

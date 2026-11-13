@@ -11,7 +11,9 @@ python launch.py init
 python launch.py doctor --packages-only
 ```
 
-依赖版本锁在本技能 `uv.lock`。初始化可能下载 Python 和依赖；`init --warmup` 可继续下载资源。不需要 Node、Tauri、FastAPI 服务或文库数据库。另一台机器需重新初始化，不要复制虚拟环境。日常命令不自动安装依赖；环境缺失或损坏时提示运行 init。
+依赖版本锁在本技能 `uv.lock`。初始化可能下载 Python 和依赖；`init --warmup` 可继续下载资源。需要访问 PyPI 以及引擎资源下载源；网络受限时按下文配置代理。不需要 Node、Tauri、FastAPI 服务或文库数据库。另一台机器需重新初始化，不要复制虚拟环境。日常命令不自动安装依赖；环境缺失或损坏时提示运行 init。
+
+Windows 中若 ONNX 等原生库报 `DLL load failed`，按 BabelDOC 的诊断提示安装 Microsoft Visual C++ x64 Redistributable；Python 包安装成功不保证系统原生库可加载。当前 `doctor` 检查包版本和资源散列，不检测所有原生库的加载情况。布局推理可使用 CPU，不要求 CUDA。技能目录须可写，以创建 `.venv`；任务目录和用户缓存目录也须可写。
 
 `doctor` 只检查版本和已有资源散列；`doctor --packages-only` 只检查依赖。模型/字体资源缺失时执行：
 
@@ -107,4 +109,4 @@ python launch.py package --output "../pdfen2zh.zip"
 
 ZIP 输出必须位于技能目录之外，不覆盖已有 ZIP。按代码中 PUBLIC_FILES 及 scripts/ 的 Python 源码白名单收集；新增分发文件时显式维护该名单。不会带入 config.local.json、.env、虚拟环境、缓存、PDF、任务或测试产物，保留 LICENSE 与来源说明。解压后从 init 开始；本地配置和任务数据需接收方自行准备。
 
-本交付为需初始化、需配置翻译服务的源码 skill。免安装版本还需为各平台封装运行时和资源；免配置版本还需提供翻译服务、认证与费用安排。本轮不内置运行时、资源或共享 API 密钥。Windows 以外的入口已按平台选择解释器路径，但需各平台实测后才能声明支持。
+本交付为需首次初始化的源码 skill。助手模式无需配置翻译服务，但需要可读写文件并执行本地命令的助手；API 模式需自行配置翻译服务。源码不内置运行时、布局/字体资源或共享 API 密钥。Windows 以外的入口已按平台选择解释器路径，但需各平台实测后才能声明支持。

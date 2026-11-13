@@ -2,7 +2,7 @@
 
 此模式由当前对话中的助手阅读并翻译具体单元，再由本地 BabelDOC 排版。无需翻译服务地址、模型 ID 或 API Key。命令行不会自动调用当前助手，也不会在译文缺失时转而调用 API。
 
-仍需安装依赖和准备字体/布局资源。`agent-export`、`agent-check`、`agent-render` 不发送翻译请求；对话本身的上下文和用量由当前工具计算，本地 API 账本不测量这些用量。
+首次先按[环境说明](usage.md#环境)执行 `python launch.py init --warmup` 和 `python launch.py doctor`，安装依赖并准备字体/布局资源。`agent-export`、`agent-check`、`agent-render` 不发送翻译请求；对话本身的上下文和用量由当前工具计算，本地 API 账本不测量这些用量。
 
 ## 1. 导出实际待译单元
 
