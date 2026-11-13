@@ -78,8 +78,10 @@ async def execute(
         if agent and agent["phase"] == "render":
             write_json(work.root / "agent-source.json", agent["packet"])
             write_json(work.root / "agent-translations.json", agent["outputs"])
+            write_json(work.root / "agent-verbatim.json", agent["verbatim"])
             for name, filename in (
                 ("agentSource", "agent-source.json"), ("agentTranslations", "agent-translations.json"),
+                ("agentVerbatim", "agent-verbatim.json"),
             ):
                 work.manifest[name] = {"path": filename, "sha256": digest(work.root / filename)}
             work.manifest["agentExport"] = agent["origin"]
@@ -112,6 +114,7 @@ async def execute(
                         options["agent"].update(
                             packetPath=str(work.root / "agent-source.json"),
                             translationsPath=str(work.root / "agent-translations.json"),
+                            verbatimPath=str(work.root / "agent-verbatim.json"),
                         )
                 if base_data:
                     options["repair"] = {
@@ -287,8 +290,10 @@ def agent_check(args):
     _, _, packet, packet_hash = load_packet(args.manifest)
     _, coverage = collect_translations(packet, packet_hash, args.translations)
     missing = coverage.pop("missingIds")
+    retained = coverage.pop("verbatimUnits")
     print(json.dumps({
-        **coverage, "missingCount": len(missing), "missingIds": missing[:30], "ready": not missing,
+        **coverage, "verbatimCount": len(retained),
+        "missingCount": len(missing), "missingIds": missing[:30], "ready": not missing,
         "note": "检查完整性与占位符，不证明译文语义正确；不调用翻译服务。",
     }, ensure_ascii=False, indent=2))
     return 1 if missing else 0
@@ -303,6 +308,6 @@ async def agent_render(args):
     require_agent_assets(cache)
     return await execute(
         path.parent / "input.pdf", args.output, AGENT_PROVIDER, manifest["settings"], cache, args.timeout,
-        agent={"phase": "render", "packet": packet, "outputs": outputs,
+        agent={"phase": "render", "packet": packet, "outputs": outputs, "verbatim": coverage["verbatimUnits"],
                "origin": {"path": str(path), "sha256": digest(path)}},
     )

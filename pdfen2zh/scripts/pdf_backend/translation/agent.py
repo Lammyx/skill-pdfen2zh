@@ -46,15 +46,19 @@ class AgentSession:
         self.positions = {}
         self.lock = threading.RLock()
         self.expected, self.outputs = {}, {}
+        self.verbatim = {}
         if self.phase == "render":
             packet = json.loads(Path(options["packetPath"]).read_text(encoding="utf-8"))
             self.expected = {unit["id"]: unit for unit in packet["units"]}
             self.outputs = json.loads(Path(options["translationsPath"]).read_text(encoding="utf-8"))
+            self.verbatim = json.loads(Path(options["verbatimPath"]).read_text(encoding="utf-8"))
 
     def summary(self):
         return {
             "mode": "agent", "phase": self.phase, "exportedUnits": len(self.units),
             "appliedUnits": len(self.completed), "apiRequests": 0,
+            "translatedUnits": len(self.completed) - len(self.verbatim),
+            "verbatimUnits": self.verbatim,
             "conversationTokenUsage": "not_measured",
         }
 
@@ -126,11 +130,14 @@ class AgentSession:
         if self.expected.get(key) != unit:
             raise ValueError(f"待译单元与冻结原文不匹配：{key}")
         value = self.outputs[key]
-        if placeholders_differ(prepared, value) or looks_untranslated(text, value, "zh"):
+        retained = key in self.verbatim and value == text
+        if placeholders_differ(prepared, value) or (not retained and looks_untranslated(text, value, "zh")):
             raise ValueError(f"译文占位符结构有误或长英文段落未翻译：{key}")
         tracker.new_llm_translate_tracker().set_output(value)
         applied = engine.il_translator.post_translate_paragraph(paragraph, tracker, prepared, value)
         observed = self.observer.units[id(paragraph)]
+        if retained:
+            observed["verbatimReason"] = self.verbatim[key]
         if applied is False or observed["structure"]:
             raise ValueError(f"引擎拒绝回填译文：{key}")
         with self.lock:

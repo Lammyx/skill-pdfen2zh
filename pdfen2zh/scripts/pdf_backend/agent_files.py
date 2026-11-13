@@ -44,7 +44,7 @@ def load_packet(manifest_path):
 
 def collect_translations(packet, packet_hash, paths):
     expected = {unit["id"]: unit for unit in packet["units"]}
-    outputs = {}
+    outputs, verbatim = {}, {}
     for path in paths:
         value = json.loads(Path(path).expanduser().read_text(encoding="utf-8-sig"))
         if (
@@ -67,10 +67,18 @@ def collect_translations(packet, packet_hash, paths):
                 Counter(TOKENS.findall(output)) != Counter(TOKENS.findall(expected[key]["source"]))
             ):
                 raise ValueError(f"译文公式或样式占位符不匹配：{key}")
+            reason = row.get("verbatimReason")
+            if reason is not None:
+                if reason not in ("code", "identifier", "bibliography") or output != expected[key]["source"]:
+                    raise ValueError(f"原样保留须使用有效原因且 output 与 source 完全相同：{key}")
+                verbatim[key] = reason
             outputs[key] = output
     missing = [key for key in expected if not outputs.get(key, "").strip()]
     complete = {key: output for key, output in outputs.items() if output.strip()}
-    return complete, {"totalUnits": len(expected), "translatedUnits": len(complete), "missingIds": missing}
+    return complete, {
+        "totalUnits": len(expected), "translatedUnits": len(complete) - len(verbatim),
+        "filledUnits": len(complete), "verbatimUnits": verbatim, "missingIds": missing,
+    }
 
 
 def write_batches(root, packet, packet_hash, batch_chars):
