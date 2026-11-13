@@ -4,6 +4,7 @@ import json
 import traceback
 from pathlib import Path
 
+from ..agent_files import AgentTranslationError
 from ..ai.generation import ProviderRequestError
 from .sections import SectionDetectionError
 
@@ -28,7 +29,10 @@ def error_report(exc: BaseException) -> dict:
     asset_failure = any(isinstance(error, AssetSetupError) for error in chain) or any(
         frame["file"] in ("assets.py", "base_doclayout.py", "doclayout.py") for frame in frames
     )
-    if any(isinstance(error, SectionDetectionError) for error in chain):
+    if any(isinstance(error, AgentTranslationError) for error in chain):
+        code = "AGENT_TRANSLATION_REJECTED"
+        message = str(next(error for error in chain if isinstance(error, AgentTranslationError)))
+    elif any(isinstance(error, SectionDetectionError) for error in chain):
         code = "SECTION_DETECTION_FAILED"
         message = str(next(error for error in chain if isinstance(error, SectionDetectionError)))
     elif asset_failure:

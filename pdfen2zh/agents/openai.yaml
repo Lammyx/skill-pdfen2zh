@@ -1,4 +1,4 @@
 interface:
   display_name: "pdfen2zh · PDF 英译中"
-  short_description: "保留英文论文 PDF 版式，生成中文及双语版本，支持缓存复用与指定页面修复"
+  short_description: "英文 PDF 中文及双语排版，支持 API 或当前助手翻译、缓存复用与指定页面修复"
   default_prompt: "使用 $pdfen2zh 将指定英文 PDF 翻译成中文，保留版式并交付中文、双语 PDF 和检查报告。"

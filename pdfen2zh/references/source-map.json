@@ -6,13 +6,13 @@
       "source": "PDFtranslate/services/reader_service/translation/babeldoc.py",
       "sourceSha256": "6c98c8a5842a9c0e2c57c318f3c90d49d01e63b7a535269e63d5199052f42c0a",
       "target": "scripts/pdf_backend/translation/babeldoc.py",
-      "targetSha256": "0c5fe72b777d4129d2142025acb9bfb2dc3807f5ed36d36f76207f5d2f621f4f"
+      "targetSha256": "5847017a08d519bbf0c218b4508bd7309ed625390c16be4a01643f649f8a242d"
     },
     {
       "source": "PDFtranslate/services/reader_service/translation/worker.py",
       "sourceSha256": "c7bec28fa09080f4e1c47422381afa8a9599c74a4f92fae1173097a1b265685d",
       "target": "scripts/pdf_backend/translation/worker.py",
-      "targetSha256": "6a9767722a3d6846b335831bb7523f1023ced50ba8db0fc2fc518cdd154cb488"
+      "targetSha256": "88f2cea2fbad0eb271b433449704d51cbd1d60e6649651a11f4c01b4bf3da4e7"
     },
     {
       "source": "PDFtranslate/services/reader_service/translation/quality.py",
@@ -84,13 +84,13 @@
       "source": "PDFtranslate/services/reader_service/translation/errors.py",
       "sourceSha256": "49171794b179ff4b54fed5b27a9eda474241c1c807ffa8c06bf8367d4f6ba2e9",
       "target": "scripts/pdf_backend/translation/errors.py",
-      "targetSha256": "53c33d297f26745762b9b812a5fcd7ba7102e6a94f9ce188c7f4b577059a238a"
+      "targetSha256": "3effa4db9a19e5c5c968a4c067f1c29b4b5d618fa3b89ab8c3bba5febd1270c8"
     },
     {
       "source": "PDFtranslate/services/reader_service/ai/generation.py",
       "sourceSha256": "8140126f5d5b435d33c7685fc14c5024169499b1c6c42a5ce19b610f0e4db9cc",
       "target": "scripts/pdf_backend/ai/generation.py",
-      "targetSha256": "1b5d0100c905b974586e034b551a103e9c046f4c9f04192895da940ab375e83a"
+      "targetSha256": "2600b9cd5bbc56eae1cb6fb6cc2079b1530aed230e627db64d156040e51fbb24"
     },
     {
       "source": "PDFtranslate/services/reader_service/ai/usage.py",
@@ -104,5 +104,6 @@
     "pure academic prompt constants",
     "independent worker module and environment variable names",
     "independent file pipeline and manifests"
-  ]
+  ],
+  "updated": "2026-11-13"
 }

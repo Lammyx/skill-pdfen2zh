@@ -54,6 +54,8 @@ macOS/Linux 用 `export PDF_TRANSLATE_API_KEY='...'` 等形式设置相同变量
 
 ## 翻译
 
+以下 `translate` 是 API 模式。无需翻译 API、由当前助手翻译时，使用[助手文件模式](agent-workflow.md)：`agent-export → 当前助手分批填写译文 → agent-check → agent-render`。引擎命令不会自行驱动当前对话，也不会在缺译时切换 API。
+
 ```powershell
 python launch.py translate --input "paper.pdf" --output "translated"
 python launch.py translate --input "paper.pdf" --output "translated" --glossary "terms.json" --sections abstract body

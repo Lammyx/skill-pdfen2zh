@@ -31,6 +31,15 @@ async def run(config: dict, emit):
     binding = config.get("usageLedger")
     repository = UsageRepository(binding["path"], recover=False) if binding else None
     repair_options = (config.get("options") or {}).get("repair")
+    agent_options = (config.get("options") or {}).get("agent")
+    agent = None
+    if agent_options:
+        from .agent import AgentSession
+
+        agent = AgentSession(
+            agent_options, observer, unit_cache_identity(config)["sourceHash"],
+            (config["options"].get("glossary") or {}).get("entries", []),
+        )
     repair = None
     if repair_options:
         from .repair import RepairSession
@@ -57,9 +66,10 @@ async def run(config: dict, emit):
             rotations.instrument(),
             observer.instrument(),
             repair.instrument() if repair else contextlib.nullcontext(),
+            agent.instrument() if agent else contextlib.nullcontext(),
             scope.instrument(),
         ):
-            await run_observed(config, emit, observer, scope, repository, repair, rotations)
+            await run_observed(config, emit, observer, scope, repository, repair, rotations, agent)
     finally:
         if repository:
             repository.close()
@@ -75,7 +85,10 @@ def unit_cache_identity(config):
             k: v
             for k, v in (config.get("options") or {}).items()
             if k
-            not in ("repair", "formulaProtection", "headingRepair", "rotatedTextPolicy", "runningTitlePolicy")
+            not in (
+                "repair", "agent", "formulaProtection", "headingRepair",
+                "rotatedTextPolicy", "runningTitlePolicy",
+            )
         },
     }
 
@@ -94,7 +107,9 @@ def apply_manual_priority(translation_config):
     shared.get_glossaries_for_translation = combined
 
 
-async def run_observed(config: dict, emit, observer, scope, repository=None, repair=None, rotations=None):
+async def run_observed(
+    config: dict, emit, observer, scope, repository=None, repair=None, rotations=None, agent=None
+):
     emit({"type": "progress", "stage": "加载 BabelDOC（首次可能较慢）", "progress": 0})
     from babeldoc.format.pdf.high_level import async_translate, init
     from babeldoc.format.pdf.translation_config import TranslationConfig, WatermarkOutputMode
@@ -114,13 +129,18 @@ async def run_observed(config: dict, emit, observer, scope, repository=None, rep
             repository.record(config["usageLedger"]["taskId"], entry)
         emit({"type": "usage", "entry": entry, "persisted": repository is not None})
 
-    translator = ReaderOpenAITranslator(
-        ProviderConfig(**provider),
-        config["target_lang"],
-        replace(GenerationPolicy.from_env(), max_retries=0) if repair else GenerationPolicy.from_env(),
-        options.get("sourceLang", "en"),
-        usage_emit=record_usage,
-    )
+    if agent or provider["base_url"] == "agent://local":
+        from .agent import FileTranslator
+
+        translator = FileTranslator(options.get("sourceLang", "en"), config["target_lang"], record_usage)
+    else:
+        translator = ReaderOpenAITranslator(
+            ProviderConfig(**provider),
+            config["target_lang"],
+            replace(GenerationPolicy.from_env(), max_retries=0) if repair else GenerationPolicy.from_env(),
+            options.get("sourceLang", "en"),
+            usage_emit=record_usage,
+        )
     if repair:
         translator.request_gate = repair.check_request
     set_translate_rate_limiter(2)
@@ -196,6 +216,8 @@ async def run_observed(config: dict, emit, observer, scope, repository=None, rep
             raise RuntimeError("BabelDOC error")
         if event["type"] == "finish":
             result = event["translate_result"]
+            if agent and agent.phase == "export":
+                agent.save_packet(Path(config["source"]).parent / "agent-source.json")
             if repair and rotations:
                 # Restoring a dropped chart label is useful even when every normal
                 # paragraph was skipped. Existing page-blocking checks still win.
@@ -240,6 +262,7 @@ async def run_observed(config: dict, emit, observer, scope, repository=None, rep
                     else observer.summary(),
                     "translationScope": scope.report,
                     "glossaryEntries": terms_count,
+                    **({"agent": agent.summary()} if agent else {}),
                     **(
                         {
                             "repair": {

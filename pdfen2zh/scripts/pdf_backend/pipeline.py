@@ -3,8 +3,11 @@ import copy
 import json
 import os
 import shutil
+from dataclasses import asdict
 from pathlib import Path
 
+from .agent_files import AGENT_PROVIDER, collect_translations, load_packet, write_batches
+from .ai.generation import GenerationPolicy
 from .ai.provider import ProviderConfig
 from .ai.usage import UsageRepository
 from .config import (
@@ -53,11 +56,15 @@ async def execute(
     pages=None,
     max_new_requests=0,
     layout_only=False,
+    agent=None,
     engine=None,
     emit=None,
 ):
-    kind = "layout-repair" if layout_only else "repair" if base_data else "translation"
-    generation = generation_snapshot()
+    kind = (
+        "agent-" + agent["phase"] if agent else "layout-repair" if layout_only
+        else "repair" if base_data else "translation"
+    )
+    generation = asdict(GenerationPolicy()) if provider == AGENT_PROVIDER else generation_snapshot()
     work = Workspace(source, output, kind, settings, provider, generation, cache)
     ledger = UsageRepository(work.root / "usage.sqlite3", recover=False)
     ledger.create(work.root.name, kind, provider.model)
@@ -68,6 +75,15 @@ async def execute(
     status = "failed"
     error = None
     try:
+        if agent and agent["phase"] == "render":
+            write_json(work.root / "agent-source.json", agent["packet"])
+            write_json(work.root / "agent-translations.json", agent["outputs"])
+            for name, filename in (
+                ("agentSource", "agent-source.json"), ("agentTranslations", "agent-translations.json"),
+            ):
+                work.manifest[name] = {"path": filename, "sha256": digest(work.root / filename)}
+            work.manifest["agentExport"] = agent["origin"]
+            work.save()
         if base_data:
             base_path, base, old_paths = base_data
             work.manifest["baseManifest"] = {"path": str(base_path), "sha256": digest(base_path)}
@@ -90,6 +106,13 @@ async def execute(
                 }
             else:
                 options = copy.deepcopy(settings)
+                if agent:
+                    options["agent"] = {"phase": agent["phase"]}
+                    if agent["phase"] == "render":
+                        options["agent"].update(
+                            packetPath=str(work.root / "agent-source.json"),
+                            translationsPath=str(work.root / "agent-translations.json"),
+                        )
                 if base_data:
                     options["repair"] = {
                         "baseJobId": base["id"],
@@ -111,6 +134,15 @@ async def execute(
                 mono, dual = Path(final["mono"]), Path(final["dual"])
                 work.check_source()
                 work.validate(mono, dual)
+                if agent and agent["phase"] == "export":
+                    packet_path = work.root / "agent-source.json"
+                    packet = json.loads(packet_path.read_text(encoding="utf-8"))
+                    packet_hash = digest(packet_path)
+                    work.manifest["agentSource"] = {"path": packet_path.name, "sha256": packet_hash}
+                    count = write_batches(work.root, packet, packet_hash, agent["batchChars"])
+                    work.manifest["agentBatches"] = count
+                    status = "awaiting_translation"
+                    return work.root / "manifest.json"
                 if base_data:
                     from .translation.repair_results import patch_repair_pages
 
@@ -128,6 +160,9 @@ async def execute(
                 mono, dual, layout = await asyncio.to_thread(
                     postprocess, work, mono, dual, pages or range(1, work.manifest["source"]["pages"] + 1)
                 )
+        if agent:
+            task_file(work.root, work.manifest["agentSource"])
+            task_file(work.root, work.manifest["agentTranslations"])
         work.publish(mono, dual)
         units = work.root / "translation-units.json"
         if base_data and layout_only and "units" in base:
@@ -154,7 +189,9 @@ async def execute(
             error = error.replace(provider.api_key, "[redacted]")
         raise
     finally:
-        ledger.finalize(work.root.name, status, capture_complete=status == "succeeded")
+        ledger.finalize(
+            work.root.name, status, capture_complete=status in ("succeeded", "awaiting_translation")
+        )
         usage = ledger.summary(work.root.name)
         ledger.close()
         work.manifest["status"] = status
@@ -166,6 +203,7 @@ async def execute(
             "translationScope": final.get("translationScope") if final else None,
             "repair": final.get("repair") if final else None,
             "layout": layout,
+            "agent": final.get("agent") if final else None,
             "note": "片段检查不证明语义正确；斜排标签可能保留英文。",
         }
         if base_data:
@@ -200,6 +238,8 @@ async def repair(args):
     if args.layout_only and args.max_new_requests:
         raise ValueError("本地排版修复不能同时开启补译请求")
     base_path, base, paths = load_base(args.manifest)
+    if base["provider"] == AGENT_PROVIDER.identity() and args.max_new_requests:
+        raise ValueError("助手译文不能自动补发 API 请求；请修改原任务译文文件并使用 agent-render")
     pages = parse_pages(args.pages, base["source"]["pages"])
     if args.max_new_requests:
         provider = provider_from_args(args)
@@ -221,4 +261,48 @@ async def repair(args):
         pages=pages,
         max_new_requests=args.max_new_requests,
         layout_only=args.layout_only,
+    )
+
+
+def require_agent_assets(cache):
+    from .resources import doctor
+
+    os.environ["PDF_TRANSLATE_CACHE_DIR"] = str(cache)
+    if not doctor()["ready"]:
+        raise ValueError("助手模式需先准备本机资源，请运行 python launch.py warmup，再执行导出或排版")
+
+
+async def agent_export(args):
+    if not 2000 <= args.batch_chars <= 64000:
+        raise ValueError("批次目标字符预算须为 2000–64000；单个超长单元不拆分")
+    cache = cache_directory(args.cache_dir)
+    require_agent_assets(cache)
+    return await execute(
+        args.input, args.output, AGENT_PROVIDER, translation_settings(args), cache, args.timeout,
+        agent={"phase": "export", "batchChars": args.batch_chars},
+    )
+
+
+def agent_check(args):
+    _, _, packet, packet_hash = load_packet(args.manifest)
+    _, coverage = collect_translations(packet, packet_hash, args.translations)
+    missing = coverage.pop("missingIds")
+    print(json.dumps({
+        **coverage, "missingCount": len(missing), "missingIds": missing[:30], "ready": not missing,
+        "note": "检查完整性与占位符，不证明译文语义正确；不调用翻译服务。",
+    }, ensure_ascii=False, indent=2))
+    return 1 if missing else 0
+
+
+async def agent_render(args):
+    path, manifest, packet, packet_hash = load_packet(args.manifest)
+    outputs, coverage = collect_translations(packet, packet_hash, args.translations)
+    if coverage["missingIds"]:
+        raise ValueError(f'仍有 {len(coverage["missingIds"])} 个单元未翻译；先补齐译文，不会自动调用 API')
+    cache = cache_directory(args.cache_dir)
+    require_agent_assets(cache)
+    return await execute(
+        path.parent / "input.pdf", args.output, AGENT_PROVIDER, manifest["settings"], cache, args.timeout,
+        agent={"phase": "render", "packet": packet, "outputs": outputs,
+               "origin": {"path": str(path), "sha256": digest(path)}},
     )

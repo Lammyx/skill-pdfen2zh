@@ -44,7 +44,10 @@ def main():
     parser = argparse.ArgumentParser(description="PDF 英译中：初始化、诊断、翻译、修复与干净打包")
     parser.add_argument("--config", help="本地 JSON 配置；默认读取技能目录 config.local.json")
     parser.add_argument("--cache-dir", help="当前机器资源/片段缓存，优先于环境变量及配置文件")
-    parser.add_argument("command", choices=("init", "doctor", "warmup", "translate", "repair", "package"))
+    parser.add_argument("command", choices=(
+        "init", "doctor", "warmup", "translate", "repair", "package",
+        "agent-export", "agent-check", "agent-render",
+    ))
     parser.add_argument("arguments", nargs=argparse.REMAINDER, help="子命令参数；用 <命令> --help 查看")
     args = parser.parse_args()
     if args.command == "package":

@@ -1,13 +1,20 @@
 ---
 name: pdfen2zh
-description: Translate English academic PDFs into Chinese while preserving page layout, producing Chinese and bilingual PDFs. Also repair selected pages of this skill's prior output using cached translations or bounded new requests. Use for full PDF translation; general PDF extraction, editing, and summarization use the existing pdf skill.
+description: Translate English academic PDFs into Chinese and bilingual PDFs with preserved layout. Use an API or export units for the current assistant to translate and locally render without a translation API. Also repair selected pages using saved translations or bounded API requests. General PDF editing and summarization are outside this workflow.
 ---
 
 # pdfen2zh：英文 PDF 翻译为中文
 
 使用本技能自带 Python 后端，底层固定 BabelDOC 0.6.4。无需启动阅读器、连接 Zotero 或建立索引。
 
-## 开始
+## 选择翻译方式
+
+- 用户要求“你来翻译”“不走 API”时使用**助手文件模式**，先读 [agent-workflow.md](references/agent-workflow.md)，执行 `agent-export`，由当前助手实际翻译并保存每批译文，再 `agent-check`、`agent-render`。不配置或调用翻译服务，不能自动回退 API。
+- 用户明确选择翻译 API 时使用下文 `translate` 流程。命令行 `translate` 保持原有 API 行为。
+- 用户未指定方式时，在当前助手能读取/写入文件的环境中优先使用助手文件模式；不能因发现环境中的密钥而自动选择 API。两种方式均先准备本地引擎资源。
+- 助手文件模式的 API 账本为 0 请求，只代表没有额外翻译服务调用；对话本身仍有上下文和用量。不要称其不消耗 token。
+
+## API 模式
 
 1. 确认用户指定的输入 PDF 和输出位置。没有指定位置时使用输入目录下的 `translated/`，任务会自动创建独立子目录。
 2. 阅读 [usage.md](references/usage.md) 获取环境安装、参数、缓存与修复命令。统一使用 `python launch.py`；首次执行 `init` 安装锁定依赖，再 `warmup` 准备资源，最后 `doctor` 检查。入口按自身位置定位技能，可从任意目录调用。不得借用其他项目的密钥或依赖路径作为固定运行条件。
@@ -30,6 +37,7 @@ python launch.py translate --input "paper.pdf" --output "translated"
 - 图表斜排标签空白或重复页眉不一致时，优先 `repair --layout-only --pages ...`；该模式不调用模型。恢复英文标签只解决内容丢失，不称其已翻成中文。
 - 任一修复均生成新目录，保留原文和旧产物。没有本技能清单的外部译文不直接套用缓存修复，先说明缺少源版本/设置记录。
 - 迁移时复制完整任务目录。修复使用当前机器缓存，旧缓存路径仅记录来源；模型/端点身份与片段记录仍须兼容。
+- 助手任务需要改译文时，修改原导出任务的译文文件并重新 `agent-render`，复用其余单元。不能用正数 API 预算补译助手任务。
 
 ## 输出检查
 

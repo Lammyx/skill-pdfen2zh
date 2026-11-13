@@ -13,13 +13,16 @@ def parser():
     doctor.add_argument("--packages-only", action="store_true")
     warmup = commands.add_parser("warmup", help="显式下载并检查布局/字体资源，不调用翻译模型")
     warmup.add_argument("--timeout", type=float, default=600)
-    for name in ("translate", "repair"):
+    check = commands.add_parser("agent-check", help="离线检查助手译文覆盖和占位符")
+    check.add_argument("--manifest", required=True)
+    check.add_argument("--translations", required=True, nargs="+")
+    for name in ("translate", "repair", "agent-export", "agent-render"):
         task = commands.add_parser(name)
         task.add_argument("--output", required=True, help="输出根目录；每次建立独立任务子目录")
         task.add_argument("--base-url", help="OpenAI-compatible 地址；也可用 PDF_TRANSLATE_BASE_URL")
         task.add_argument("--model", help="模型名；也可用 PDF_TRANSLATE_MODEL")
         task.add_argument("--timeout", type=float, default=3600)
-        if name == "translate":
+        if name in ("translate", "agent-export"):
             task.add_argument("--input", required=True)
             task.add_argument("--glossary", help="source/target 术语 JSON 数组")
             task.add_argument(
@@ -29,6 +32,11 @@ def parser():
                 default=["abstract", "body", "appendix"],
             )
             task.add_argument("--document-mode", choices=("digital", "table", "ocr"), default="digital")
+            if name == "agent-export":
+                task.add_argument("--batch-chars", type=int, default=16000, help="批次目标字符数，不拆分单元")
+        elif name == "agent-render":
+            task.add_argument("--manifest", required=True, help="agent-export 生成的任务清单")
+            task.add_argument("--translations", required=True, nargs="+", help="一份或多份译文 JSON")
         else:
             task.add_argument("--manifest", required=True, help="本技能基准任务的 manifest.json")
             task.add_argument("--pages", required=True, help="原文物理页码，例如 1,3-5")
@@ -60,11 +68,19 @@ def main():
                 and (args.command == "doctor" and args.packages_only or result["ready"])
                 else 1
             )
+        if args.command == "agent-check":
+            from pdf_backend.pipeline import agent_check
+
+            return agent_check(args)
         if not 5 <= args.timeout <= 86400:
             raise ValueError("任务超时须为 5–86400 秒")
-        from pdf_backend.pipeline import repair, translate
+        from pdf_backend.pipeline import agent_export, agent_render, repair, translate
 
-        asyncio.run(translate(args) if args.command == "translate" else repair(args))
+        action = {
+            "translate": translate, "repair": repair,
+            "agent-export": agent_export, "agent-render": agent_render,
+        }
+        asyncio.run(action[args.command](args))
         return 0
     except KeyboardInterrupt:
         print(json.dumps({"status": "cancelled", "error": "用户取消"}, ensure_ascii=False), file=sys.stderr)

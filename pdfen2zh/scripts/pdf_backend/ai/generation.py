@@ -61,6 +61,7 @@ class ProviderRequestError(RuntimeError):
         self.code = code
         self.status = status
         messages = {
+            "AGENT_MODE_NO_API": "助手文件模式已阻止翻译服务调用；请检查导出/回填流程。",
             "EMPTY_COMPLETION": "模型没有返回译文，任务已停止；空结果不会写入缓存。",
             "OUTPUT_TRUNCATED": "模型输出达到上限，任务已停止；请增加输出预算或减小翻译范围。",
             "REQUEST_TIMEOUT": "模型请求超时且已达到重试上限，请检查接口或稍后重试。",

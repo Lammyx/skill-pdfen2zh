@@ -62,9 +62,11 @@ class BabelDocEngine:
     ) -> AsyncIterator[dict]:
         if not self.identity()["available"]:
             raise ValueError(
-                "需要 BabelDOC 0.6.4：运行 uv sync --extra dev --extra pdf；首次翻译还需要模型/字体资源"
+                "需要 BabelDOC 0.6.4：运行 python launch.py init；首次翻译还需要 warmup 准备资源"
             )
-        if not (options or {}).get("repair") or options["repair"]["allowNewRequests"]:
+        if not (options or {}).get("agent") and (
+            not (options or {}).get("repair") or options["repair"]["allowNewRequests"]
+        ):
             provider.validate()
         env = dict(os.environ, PYTHONIOENCODING="utf-8", PYTHONPATH=str(Path(__file__).resolve().parents[2]))
         flags = {"creationflags": 0x08000000} if sys.platform == "win32" else {}

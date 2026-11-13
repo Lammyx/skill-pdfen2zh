@@ -11,6 +11,7 @@ PUBLIC_FILES = (
     "SKILL.md", "LICENSE", "pyproject.toml", "uv.lock", ".python-version", ".gitignore",
     "launch.py", "config.example.json", "agents/openai.yaml", "references/usage.md",
     "references/architecture.md", "references/licenses.md", "references/source-map.json",
+    "references/agent-workflow.md",
 )
 
 
